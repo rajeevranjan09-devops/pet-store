@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
+import { API_BASE_URL } from "../config";
 
 function PetDetail() {
   const { id } = useParams();
   const [pet, setPet] = useState(null);
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:5000/pets/${id}`)
+    axios.get(`${API_BASE_URL}/pets/${id}`)
       .then(response => setPet(response.data))
       .catch(error => console.error(error));
   }, [id]);
