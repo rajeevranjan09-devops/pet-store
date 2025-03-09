@@ -1,14 +1,14 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import PetList from './components/PetList';
-import PetDetail from './components/PetDetail';
-import PetForm from './components/PetForm';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import PetList from "./components/PetList";
+import PetDetail from "./components/PetDetail";
+import PetForm from "./components/PetForm";
 
 function App() {
   return (
     <Router>
       <div className="container">
-        <h1>Simple Pet Store</h1>
+        <h1>Simple Pet Store March 9, 2025</h1>
         <Routes>
           <Route path="/" element={<PetList />} />
           <Route path="/pets/:id" element={<PetDetail />} />
