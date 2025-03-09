@@ -22,13 +22,13 @@ pipeline {
                 withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {  // Use Jenkins AWS credentials
                     sh """
                     echo "Logging into AWS ECR..."
-                    /opt/homebrew/bin/aws ecr get-login-password --region ${AWS_REGION} | /usr/local/bin/docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
                     echo "Building Docker Image..."
-                    /usr/local/bin/docker build --platform linux/amd64 -t ${ECR_REPO} .
+                    docker build --platform linux/amd64 -t ${ECR_REPO} .
 
                     echo "Tagging Docker Image..."
-                    /usr/local/bin/docker tag ${ECR_REPO}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+                    docker tag ${ECR_REPO}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
                     """
                 }
             }
@@ -50,7 +50,7 @@ pipeline {
                 withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
                     sh """
                     echo "Updating ECS Service..."
-                    /opt/homebrew/bin/aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --force-new-deployment
+                    aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --force-new-deployment
                     """
                 }
             }
