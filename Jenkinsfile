@@ -8,7 +8,6 @@ pipeline {
         CLUSTER_NAME = 'pet-store-ecs'
         SERVICE_NAME = 'pet-store-ui-service'
         IMAGE_TAG = "latest"
-        PATH+EXTRA = "/usr/local/bin:/opt/homebrew/bin"
     }
 
     stages {
