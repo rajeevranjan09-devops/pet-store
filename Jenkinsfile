@@ -2,12 +2,13 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = 'us-east-1'  // Change to your AWS region
-        AWS_ACCOUNT_ID = '125512903427'  // Replace with your AWS Account ID
-        ECR_REPO = 'pet-store-ui'  // ECR repository name
+        AWS_REGION = 'us-east-1'
+        AWS_ACCOUNT_ID = '125512903427'
+        ECR_REPO = 'pet-store-ui'
         CLUSTER_NAME = 'pet-store-ecs'
         SERVICE_NAME = 'pet-store-ui-service'
-        IMAGE_TAG = "latest"  // Change if you want versioning
+        IMAGE_TAG = "latest"
+        PATH+EXTRA = "/usr/local/bin:/opt/homebrew/bin"
     }
 
     stages {
@@ -19,7 +20,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {  // Use Jenkins AWS credentials
+                withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
                     sh """
                     echo "Logging into AWS ECR..."
                     aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
@@ -39,7 +40,7 @@ pipeline {
                 withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
                     sh """
                     echo "Pushing Image to AWS ECR..."
-                    /usr/local/bin/docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+                    docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
                     """
                 }
             }
@@ -48,12 +49,52 @@ pipeline {
         stage('Deploy to ECS') {
             steps {
                 withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
-                    sh """
-                    echo "Updating ECS Service..."
-                    aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --force-new-deployment
-                    """
+                    script {
+                        // Run the ECS update-service command and capture the exit code
+                        def updateServiceExitCode = sh(script: """
+                            echo "Updating ECS Service..."
+                            aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --force-new-deployment
+                        """, returnStatus: true)
+
+                        // Check if the update-service command failed
+                        if (updateServiceExitCode != 0) {
+                            error "Failed to update ECS service. Exit code: ${updateServiceExitCode}"
+                        }
+
+                        // Optionally, wait and verify the deployment status
+                        echo "Waiting for ECS service to stabilize..."
+                        sh """
+                            aws ecs wait services-stable \
+                                --cluster ${CLUSTER_NAME} \
+                                --services ${SERVICE_NAME}
+                        """
+
+                        // Check the service status after waiting
+                        def serviceStatus = sh(script: """
+                            aws ecs describe-services \
+                                --cluster ${CLUSTER_NAME} \
+                                --services ${SERVICE_NAME} \
+                                --query 'services[0].status' \
+                                --output text
+                        """, returnStdout: true).trim()
+
+                        if (serviceStatus != "ACTIVE") {
+                            error "ECS service is not in ACTIVE state. Current status: ${serviceStatus}"
+                        }
+
+                        echo "ECS service deployed successfully!"
+                    }
                 }
             }
+        }
+    }
+
+    post {
+        failure {
+            echo "Pipeline failed! Check the logs for details."
+        }
+        success {
+            echo "Pipeline completed successfully! ECS deployment is verified."
         }
     }
 }
