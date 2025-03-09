@@ -19,16 +19,16 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
+                withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {  // Use Jenkins AWS credentials
                     sh """
                     echo "Logging into AWS ECR..."
-                    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    /opt/homebrew/bin/aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
                     echo "Building Docker Image..."
-                    docker build --platform linux/amd64 -t ${ECR_REPO} .
+                    /usr/local/bin/docker build --platform linux/amd64 -t ${ECR_REPO} .
 
                     echo "Tagging Docker Image..."
-                    docker tag ${ECR_REPO}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+                    /usr/local/bin/docker tag ${ECR_REPO}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
                     """
                 }
             }
@@ -36,10 +36,10 @@ pipeline {
 
         stage('Push Docker Image to ECR') {
             steps {
-                script {
+                withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
                     sh """
                     echo "Pushing Image to AWS ECR..."
-                    docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+                    /usr/local/bin/docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
                     """
                 }
             }
@@ -47,10 +47,10 @@ pipeline {
 
         stage('Deploy to ECS') {
             steps {
-                script {
+                withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
                     sh """
                     echo "Updating ECS Service..."
-                    aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --force-new-deployment
+                    /opt/homebrew/bin/aws ecs update-service --cluster ${CLUSTER_NAME} --service ${SERVICE_NAME} --force-new-deployment
                     """
                 }
             }
