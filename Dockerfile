@@ -13,6 +13,9 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
+ARG REACT_APP_API_URL=http://petstore.bagishbek.com/api
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
 # Build the app
 RUN npm run build
 
