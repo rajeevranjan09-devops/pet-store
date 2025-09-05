@@ -3,7 +3,7 @@ name: Deploy to ECS
 on:
   push:
     branches:
-      - mainstop
+      - main
 
 jobs:
   deploy:
@@ -18,7 +18,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ap-south-1
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -27,13 +27,13 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Login to AWS ECR
-        run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+        run: aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
 
       - name: Build & Push Docker Image
         run: |
           docker buildx build --platform linux/amd64 --load -t pet-store-ui .
-          docker tag pet-store-ui:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/pet-store-ui:latest
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/pet-store-ui:latest
+          docker tag pet-store-ui:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/pet-store-ui:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/pet-store-ui:latest
 
       - name: Deploy to ECS
         run: aws ecs update-service --cluster pet-store-cluster --service pet-store-ui-service --force-new-deployment
