@@ -33,7 +33,7 @@ jobs:
         run: |
           docker buildx build --platform linux/amd64 --load -t pet-store-ui .
           docker tag pet-store-ui:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/pet-store-ui:latest
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/pet-store-ui:latest
-
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/small-ecommerce-repo:4083
+          
       - name: Deploy to ECS
-        run: aws ecs update-service --cluster pet-store-cluster --service pet-store-ui-service --force-new-deployment
+        run: aws ecs update-service --cluster small-ecommerce-repo-cluster --service small-ecommerce-repo-service --force-new-deployment
