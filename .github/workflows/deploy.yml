@@ -31,9 +31,10 @@ jobs:
 
       - name: Build & Push Docker Image
         run: |
-          docker buildx build --platform linux/amd64 -t small-ecommerce-repo:4083 .
-          docker tag small-ecommerce-repo:4083 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/small-ecommerce-repo:4083
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/small-ecommerce-repo:4083
+          docker buildx build \
+          --platform linux/amd64 \
+          -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/small-ecommerce-repo:4083 \
+          --push .
 
           
       - name: Deploy to ECS
