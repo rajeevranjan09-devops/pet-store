@@ -37,5 +37,5 @@ jobs:
           --push .
 
           
-      - name: Deploy to ECS
-        run: aws ecs update-service --cluster small-ecommerce-repo-cluster --service small-ecommerce-repo-service --force-new-deployment
+      #- name: Deploy to ECS
+      # run: aws ecs update-service --cluster small-ecommerce-repo-cluster --service small-ecommerce-repo-service --force-new-deployment
